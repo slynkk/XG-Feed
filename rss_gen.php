@@ -6,6 +6,12 @@ header ("Content-Type:text/xml");
 <channel>
 <?php
 
+function clean($string) {
+   $string = str_replace(' ', '-', $string); // Replaces all spaces with hyphens.
+
+   return preg_replace('/[^A-Za-z0-9\-]/', '', $string); // Removes special chars.
+}
+
 //Banning bad files so sickbeard doesn't find them
 //Needs to be automated some how.
 //Should also be stored in a database
@@ -27,7 +33,7 @@ if(empty($_GET['rid']))
      $rid = $_GET['rid']; // TV Rage ID
      $show = array(); // create array for the show data
      $show = TV_Shows::findById($rid); // get the show data
-
+   
      $ep = sprintf("%02d",$_GET['ep']); // episode number - hack to make it store as 01 if digit isn't greater than 9
      $season = sprintf("%02d",$_GET['season']); // tv show season - hack to make it store as 01 if digit isn't greater than 9
      $limit = $_GET['limit']; //100 - not used
@@ -36,8 +42,8 @@ if(empty($_GET['rid']))
 
 
      //Function to build and print the rss items
-     function list_item($title,$date,$size,$url)
-     {
+function list_item($title,$date,$size,$url)
+{
 	$title = str_replace("[TV]-","",$title);
 	echo "<item>\n\t";
 		echo '<title>'.$title.'</title>'."\n\t";
@@ -71,14 +77,16 @@ $items = array();
 
 if($search)
 {
-   
+
    $show_name = $show->name; // get the show's name from the returned TVRage object.
+   $show_name = str_replace("-"," ",clean($show_name)); // Some shows like american dad include symbols in them which aren't indexed.
+   
    if($ep !=0 && !empty($ep)) // Check if we're looking for an episode or season
-   	$search_string = urlencode($show_name."."."S".$season."E".$ep); // if we're looking for an episode we want to add the S and E identifiers, we were only passed an TVRage ID
+   	 $search_string = urlencode($show_name."."."S".$season."E".$ep); // if we're looking for an episode we want to add the S and E identifiers, we were only passed an TVRage ID
    else
-	$search_string = urlencode($show_name."."."S".$season); // Same concept as above but without E because we're looking for seasons.
-
-
+	   $search_string = urlencode($show_name."."."S".$season); // Same concept as above but without E because we're looking for seasons.
+   
+   echo $search_string;
    $network_data = file_get_contents("http://ixirc.com/api/?q=".$search_string); // Request the built search string on ixirc's API
    $output = json_decode($network_data); // decode the json return and store it.
    $results = $output->results; // grab the results object from the returned data we don't care about the rest of it yet.
@@ -139,7 +147,7 @@ if($search)
     	$banned = false;
 	foreach( $bans as $ban )
     	{
-  		if($server == $ban["server"] && $bot == $ban["bot"] && $pid == $ban["pid"])
+  		if($server == $ban["server"] && $bot == $ban["bot"] && $pid == $ban["pid"] || $server == "irc.abandoned-irc.net")
       			$banned = true;
     	}
 	if($banned == false)
