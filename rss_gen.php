@@ -67,9 +67,9 @@ echo '<atom:link href="'.$url.'" rel="self" type="application/rss+xml" />'."\n";
 ?>
 <title>XDCC Listing RSS Hax</title>
 <description>XDCC listing rss hax</description>
-<link>https://www.huninhune.net/xdcc</link>
+<link>Static Link Replacement</link>
 <language>en-gb</language>
-<webMaster>crich@thedefaced.org (crich)</webMaster>
+<webMaster>tim@thedefaced.org (Timothy Lawrence)</webMaster>
 <category></category>
 
 <?php
