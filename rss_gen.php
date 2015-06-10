@@ -7,9 +7,8 @@ header ("Content-Type:text/xml");
 <?php
 
 function clean($string) {
-   $string = str_replace(' ', '-', $string); // Replaces all spaces with hyphens.
-
-   return preg_replace('/[^A-Za-z0-9\-]/', '', $string); // Removes special chars.
+   $string = str_replace(' ', '_', $string); // Replaces all spaces with underscore (accepted "word" replacement)
+   return preg_replace('/\W/', '', $string); // Removes special chars. (non-word characters)
 }
 
 //Banning bad files so sickbeard doesn't find them
@@ -79,7 +78,7 @@ if($search)
 {
 
    $show_name = $show->name; // get the show's name from the returned TVRage object.
-   $show_name = str_replace("-"," ",clean($show_name)); // Some shows like american dad include symbols in them which aren't indexed.
+   $show_name = str_replace("_"," ",clean($show_name)); // Some shows like american dad include symbols in them which aren't indexed.
    
    if($ep !=0 && !empty($ep)) // Check if we're looking for an episode or season
    	 $search_string = urlencode($show_name."."."S".$season."E".$ep); // if we're looking for an episode we want to add the S and E identifiers, we were only passed an TVRage ID
