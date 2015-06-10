@@ -155,9 +155,10 @@
             $this->classification = (string)$config->classification;
 			$this->genres = array();
 
-            foreach($config->genres->genre as $genre) {
-                    $this->genres[] = (string)$genre;
-            }
+			if(is_array($config->genres->genre))
+				foreach($config->genres->genre as $genre) {
+					$this->genres[] = (string)$genre;
+				}
 
             $this->airTime = (string)$config->airtime;
             $this->twelveHourAirTime = (string)date("g:i a", strtotime($config->airtime));
