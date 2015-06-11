@@ -4,6 +4,8 @@
 //  Notes:
 //    php-mysqli extention required
 //
+//    TVRage class written by Ryan Doherty <ryan@ryandoherty.com>
+//
 /////////////////////////////////////////////////////////
 // CONFIG
 
@@ -15,12 +17,12 @@ class config {
   var $sql_p = ""; // Password
   var $sql_d = ""; // Database
 
-  var $admin = "your@email.com";
+  var $admin = "your@email.com"; // For display in XML <webMaster> tag
   var $style = true; // Style for the rss feed
   var $limit = 100; // Overwritten if $_GET['limit'] is set
 
   // Do not edit
-  var $api = "test";
+  var $api = "test"; // TODO: Unique api key input
   var $ep = 0;
   var $rid = 0;
   var $season = 0;
@@ -43,7 +45,7 @@ class config {
 // END CONFIG
 /////////////////////////////////////////////////////////
 
-// Print rss item
+// Print rss item, format provided by rss_gen.php
 function xml_item($title,$file,$category,$date,$size,$url) {
   echo "<item>\n\t";
   echo '<title>'.$title.'</title>'."\n\t";
@@ -53,7 +55,7 @@ function xml_item($title,$file,$category,$date,$size,$url) {
   echo '<category>'.$category.'</category>'."\n\t";
   echo '<description>'.$file.'</description>'."\n\t";
   echo '<enclosure url="http://'.$url.'" length="'.$size.'" type="application/x-nzb" />'."\n\t";
-  // ^^^ Possible issue with length= (is precision critical?)
+  // ^^^ Possible issue with length= (not sure if precision is critical)
   // $size is reversed from formatted text, there is truncated data (ie. 1.5G > 1.5*1024^3 = 1610612736)
   echo '<newznab:attr name="category" value="5000" />'."\n\t";
   echo '<newznab:attr name="category" value="5040" />'."\n\t";
@@ -65,7 +67,7 @@ function xml_item($title,$file,$category,$date,$size,$url) {
 // Converts formatted size to back to bytes
 function correct_size($size){
   if(!preg_match("/^([\d\.]+) ?([\w])/",$size,$m))
-    echo htmlentities($size); // DEBUG <----------------------
+    return 0;
   if(!isset($m[1])||!isset($m[2])) return 0;
   $p = 1;
   switch($m[2]) {
@@ -95,7 +97,7 @@ function compare_date($now,$then){
 $cfg = new config;
 $cfg->set(array('rid','limit','ep','season')); // TODO: Search query limit offset argument (pagination)
 
-// Basic xml style
+// Basic xml style, note use of Content: for view from browser only
 if(isset($_GET['style']) && $cfg->style){
   header ("Content-Type: text/css");
 echo <<<EOT
@@ -114,6 +116,7 @@ EOT;
   exit;
 }
 
+// Final output will be in XML format for RSS feed readers
 header ("Content-Type: text/xml");
 
 // Enable output buffering
@@ -122,6 +125,7 @@ if(!@ob_get_contents()) {
   ob_implicit_flush(0);
 }
 
+// Common data // TODO: Maybe move to config class
 $time = time();
 $data = array();
 $blacklist = array();
@@ -192,7 +196,7 @@ if($cfg->query){
       $q->close();
       if($f->num_rows > 0){
         while($g = $f->fetch_array(MYSQLI_ASSOC))
-          $blacklist[$g['network'].$g['bot'].$g['pack']] = true;
+          $blacklist[$g['network'].$g['bot'].$g['pack']] = true; // Store information to be accessed by reference (avoid looping)
       }
     } else {
       die($sql->error); // TODO: Log errors to db to prevent breaking xml
@@ -249,7 +253,7 @@ $url = $host.urlencode($_SERVER['REQUEST_URI']);
 <category></category>
 <?php
 
-// Store and empty the current output buffer to update result count for refined searches
+// Store and empty the current output buffer, to avoid multiple loops updating result count for refined searches
 $ob_tmp = ob_get_contents();
 ob_clean();
 
@@ -268,6 +272,7 @@ foreach ($data as $d) {
     $count--;
     continue;
   }
+  // Format results not filtered
   $net = $cfg->net[$d['network']];
   $size = correct_size($d['size']);
   $date = compare_date($time,$d['published']);
