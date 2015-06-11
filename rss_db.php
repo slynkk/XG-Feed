@@ -157,18 +157,20 @@ if($cfg->rid){
         // No 'rid' found locally, lookup with tvrage script
         require("TVRage.php");
         $show = TV_Shows::findById($cfg->rid);
-        if($show->name!=""){
-          // Cache the show data locally
-          $genres = implode(",",$show->genres);
-          $name = str_ireplace("_"," ",preg_replace("/\W/","",str_ireplace(" ","_",$show->name))); // Removing non-word characters
+        if(is_object($show->name)){
+          if($show->name!=""){
+            // Cache the show data locally
+            $genres = implode(",",$show->genres);
+            $name = str_ireplace("_"," ",preg_replace("/\W/","",str_ireplace(" ","_",$show->name))); // Removing non-word characters
 
-          $in = $sql->stmt_init();
-          $in->prepare("INSERT INTO `shows` VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
-          $in->bind_param("issiiississi",$cfg->rid,$show->name,$show->country,$show->started,$show->ended,
-            $show->seasons,$show->classification,$show->network,$show->runtime,$genres,$show->airDay,$time);
-          $in->execute();
-          $in->close();
-          $cfg->query = $show->name;
+            $in = $sql->stmt_init();
+            $in->prepare("INSERT INTO `shows` VALUES (?,?,?,?,?,?,?,?,?,?,?,?);");
+            $in->bind_param("issiiississi",$cfg->rid,$show->name,$show->country,$show->started,$show->ended,
+              $show->seasons,$show->classification,$show->network,$show->runtime,$genres,$show->airDay,$time);
+            $in->execute();
+            $in->close();
+            $cfg->query = $show->name;
+          }
         }
       }
     } else {
