@@ -20,6 +20,7 @@ class config {
   var $limit = 100; // Overwritten if $_GET['limit'] is set
 
   // Do not edit
+  var $api = "test";
   var $ep = 0;
   var $rid = 0;
   var $season = 0;
@@ -123,6 +124,7 @@ if(!@ob_get_contents()) {
 
 $time = time();
 $data = array();
+$blacklist = array();
 
 // Init MySQLi
 $sql = new mysqli;
@@ -181,6 +183,24 @@ if($cfg->query){
   while($fn = $n->fetch_assoc())
     $cfg->net[$fn['id']] = $fn;
 
+  // Get blacklist
+  $q = $sql->stmt_init();
+  if($q->prepare("SELECT * FROM `blacklist` WHERE `api`=?;")){
+    $q->bind_param("s",$cfg->api);
+    if($q->execute()){
+      $f = $q->get_result();
+      $q->close();
+      if($f->num_rows > 0){
+        while($g = $f->fetch_array(MYSQLI_ASSOC))
+          $blacklist[$g['network'].$g['bot'].$g['pack']] = true;
+      }
+    } else {
+      die($sql->error); // TODO: Log errors to db to prevent breaking xml
+    }
+  } else {
+    die($sql->error); // TODO: Log errors to db to prevent breaking xml
+  }
+
   // Select the table for each network
   $dbs = "";
   foreach($cfg->net as $nw)
@@ -236,6 +256,10 @@ ob_clean();
 $count = count($data);
 foreach ($data as $d) {
   // Refine search if specific eppisode/season is selected
+  if(isset($blacklist[$d['network'].$d['bot'].$d['pack']])){
+    $count--;
+    continue;
+  }
   if($cfg->ep && !preg_match("/E0?{$cfg->ep}/",$d['title'])){
     $count--;
     continue;
