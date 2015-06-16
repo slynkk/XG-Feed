@@ -216,8 +216,8 @@ if($cfg->query){
   // Select all rows with %showname%
   $data = array();
   $q = $sql->stmt_init();
-  if($q->prepare("SELECT * FROM $dbs WHERE `title` LIKE ? LIMIT ?;")){
-  // TODO: ^^^^ Optional limit offset (pagination), Order by most recent
+  if($q->prepare("SELECT * FROM $dbs WHERE `title` LIKE ? ORDER BY `published` DESC LIMIT ?;")){
+  // TODO: ^^^^ Optional limit offset (pagination)
     $name = "%".$cfg->query."%"; // % is SQL wildcard
     $q->bind_param("si",$name,$cfg->limit);
     if($q->execute()){
