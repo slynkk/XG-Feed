@@ -185,9 +185,10 @@ if($cfg->rid){
 if($cfg->query){
   // Get networks
   $n = $sql->query("SELECT * FROM `networks` WHERE `active`='1';");
-  if(!$n) die("No networks??"); // TODO: maybe handle diffrently
+  if(!$n) die("No networks??"); // TODO: User friendly exit
   while($fn = $n->fetch_assoc())
     $cfg->net[$fn['id']] = $fn;
+  if(!count($cfg->net)) die("No Networks??"); // TODO: User friendly exit
 
   // Get blacklist
   $q = $sql->stmt_init();
@@ -212,7 +213,6 @@ if($cfg->query){
   foreach($cfg->net as $nw)
     $dbs .= "`".$nw['table']."_tv`,";
   $dbs = substr($dbs,0,strlen($dbs)-1);
-
   // Select all rows with %showname%
   $data = array();
   $q = $sql->stmt_init();
@@ -263,14 +263,22 @@ $count = count($data);
 foreach ($data as $d) {
   // Refine search if specific eppisode/season is selected
   if(isset($blacklist[$d['network'].$d['bot'].$d['pack']])){
+    // Blacklisted result
     $count--;
     continue;
   }
   if($cfg->ep && !preg_match("/E0?{$cfg->ep}/",$d['title'])){
+    // Filtered by episode
     $count--;
     continue;
   }
   if($cfg->season && !preg_match("/S0?{$cfg->season}/",$d['title'])){
+    // Filtered by season
+    $count--;
+    continue;
+  }
+  if(!isset($cfg->net[$d['network']])){
+    // Inactive Network
     $count--;
     continue;
   }
