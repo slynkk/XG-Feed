@@ -157,7 +157,7 @@ if($cfg->rid){
         // No 'rid' found locally, lookup with tvrage script
         require("TVRage.php");
         $show = TV_Shows::findById($cfg->rid);
-        if(is_object($show->name)){
+        if(is_object($show)){
           if($show->name!=""){
             // Cache the show data locally
             $genres = implode(",",$show->genres);
