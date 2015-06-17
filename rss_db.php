@@ -174,10 +174,10 @@ if($cfg->rid){
         }
       }
     } else {
-      die($sql->error); // TODO: Log errors to db to prevent breaking xml
+      die($s->error); // TODO: Log errors to db to prevent breaking xml
     }
   } else {
-    die($sql->error); // TODO: Log errors to db to prevent breaking xml
+    die($s->error); // TODO: Log errors to db to prevent breaking xml
   }
 }
 
@@ -202,10 +202,10 @@ if($cfg->query){
           $blacklist[$g['network'].$g['bot'].$g['pack']] = true; // Store information to be accessed by reference (avoid looping)
       }
     } else {
-      die($sql->error); // TODO: Log errors to db to prevent breaking xml
+      die($q->error); // TODO: Log errors to db to prevent breaking xml
     }
   } else {
-    die($sql->error); // TODO: Log errors to db to prevent breaking xml
+    die($q->error); // TODO: Log errors to db to prevent breaking xml
   }
 
   // Select the table for each network
@@ -232,10 +232,10 @@ if($cfg->query){
         // TODO: No results xml message
       }
     } else {
-      die($sql->error); // TODO: Log errors to db to prevent breaking xml
+      die($q->error); // TODO: Log errors to db to prevent breaking xml
     }
   } else {
-    die($sql->error); // TODO: Log errors to db to prevent breaking xml
+    die($q->error); // TODO: Log errors to db to prevent breaking xml
   }
 }
 
